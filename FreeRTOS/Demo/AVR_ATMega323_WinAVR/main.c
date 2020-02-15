@@ -52,12 +52,27 @@
 #include "tcp/tcp_server.h"
 #include "socket.h"
 
-/* UART functionality */
-#include "uart.h"
+/* Control task */
+#include "control/control.h"
 
-/* Priority definitions for most of the tasks in the demo application.  Some
-tasks just use the idle priority. */
-#define mainTCP_RX_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
+/* UART functionality */
+//#include "uart_32u4.h"
+//
+#define USART_BAUDRATE 9600
+#define BAUD_PRESCALE ((( F_CPU / ( USART_BAUDRATE * 16UL))) - 1)
+
+void initUART( void )
+{
+    DDRD |= (1<<PD3);
+
+    unsigned int baud = BAUD_PRESCALE;
+
+    UBRR1H = (unsigned char) (baud>>8);
+    UBRR1L = (unsigned char) baud;
+
+    UCSR1B = (1<<RXEN1) | (1<<TXEN1);
+    UCSR1C = (1<<USBS1) | (3<<UCSZ10);
+}
 
 /* Prototypes for tasks defined within this file. */ 
 static void vBlinkyFunction( void *pvParameters );
@@ -69,10 +84,13 @@ void vApplicationIdleHook( void );
 int main( void )
 {
     initUART();
-    DDRB |= 0x20;
-    
+    DDRD |= (1 << PD4); //built-in led
+
     /* Setup TCP server for communication */
     vStartTCPServerTask();
+
+    /* Setup control task to blink leds */
+    vStartControlTask();
 	
 	/* In this port, to use preemptive scheduler define configUSE_PREEMPTION
 	as 1 in portmacro.h.  To use the cooperative scheduler define
@@ -105,8 +123,7 @@ static void vBlinkyFunction( void *pvParameters )
 
 void vApplicationIdleHook( void )
 {
-    //PORTB ^= 0x20;
+    //PORTD ^= (1<<PD4);
     //_delay_ms(200);
-	writeString("Idle");
 }
 

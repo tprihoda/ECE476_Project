@@ -13,8 +13,8 @@
 /* Application include files. */
 #include "tcp_server.h"
 #include "socket.h"
-#include "uart.h"
-#include "jsmn.h"
+#include "uart_32u4.h"
+#include "../jsmn.h"
 
 #define tcpDELAY_TIME           ( ( const TickType_t ) 100 )
 
@@ -59,6 +59,7 @@ static void vTCPServerInit( void )
         /* Initialize network configuration and buffer size. */
         wizchip_setnetinfo( &network_config );
         wizchip_init( txsize, rxsize );
+        setPHYCFGR(0xF8);
     }
     portEXIT_CRITICAL();
 }
@@ -77,7 +78,6 @@ int8_t ret;
                 setSn_IR( sn, Sn_IR_CON );
             }
             xServerConnEstablished = pdTRUE;
-            writeString("Socket established on port 8080\n");
             break;
 
         /* Socket n received disconnect-request (FIN packet) from connected peer */
@@ -117,7 +117,7 @@ portBASE_TYPE status;
 
 int8_t r;
 jsmn_parser p;
-jsmntok_t t;
+jsmntok_t t[16];
 
 TickType_t xLastWaitTime;
 
@@ -133,22 +133,20 @@ TickType_t xLastWaitTime;
             /* Check if a recv has occured otherwise block */
             if( ( getSn_IR(0) & Sn_IR_RECV ) ) 
             {
-                /* Read in wiz rx buffer and process commands */
-                writeString("Received some data!\n");
-
                 if( (size = getSn_RX_RSR(0)) > 0) // Don't need to check SOCKERR_BUSY because it doesn't not occur.
                 {
                     if(size > DATA_BUF_SIZE) size = DATA_BUF_SIZE; // clips size if larger that data buffer
                     ret = recv( 0, buf, size);
-
-                    if(ret <= 0) continue;  // check SOCKERR_BUSY & SOCKERR_XXX. For showing the occurrence of SOCKERR_BUSY.
+                    writeString(buf);
 
                     r = jsmn_parse(&p, (const char *)buf, sizeof(buf), &t, sizeof(t));
+                    json_extract((char *) buf, t, r); 
                 }
+                setSn_IR( 0, Sn_IR_RECV );
             }
             else
             {
-                writeString("Delaying 20 ticks -> no receive\n");
+                writeString("No rx... delaying\n");
                 vTaskDelayUntil( &xLastWaitTime, tcpDELAY_TIME );
             }
         }
