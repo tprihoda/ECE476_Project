@@ -8,7 +8,7 @@ extern "C" {
 #include <stdint.h>
 
 #ifndef DATA_BUF_SIZE
-    #define DATA_BUF_SIZE       ( 1024 )
+    #define DATA_BUF_SIZE       ( 128 )
 #endif
 
 #define tcpTCP_SERVER_TASK_PRIORITY         ( tskIDLE_PRIORITY + 2)

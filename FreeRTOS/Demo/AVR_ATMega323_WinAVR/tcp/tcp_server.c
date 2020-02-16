@@ -72,6 +72,7 @@ int8_t ret;
         case SOCK_ESTABLISHED:
             if( getSn_IR( sn ) & Sn_IR_CON )
             {
+                writeString("Socket Established\n");
                 /* Clear CON interrupt bit issued from successful connection */
                 setSn_IR( sn, Sn_IR_CON );
             }

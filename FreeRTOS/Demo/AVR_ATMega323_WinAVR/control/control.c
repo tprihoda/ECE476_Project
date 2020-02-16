@@ -18,7 +18,7 @@ portTASK_FUNCTION_PROTO( vControlTask, pvParameters );
 
 void vStartControlTask( void )
 {
-   xTaskCreate( vControlTask, "Ctrl", 256, NULL, ctrlCONTROL_TASK_PRIORITY, NULL ); 
+   xTaskCreate( vControlTask, "Ctrl", 128, NULL, ctrlCONTROL_TASK_PRIORITY, NULL ); 
 }
 
 portTASK_FUNCTION( vControlTask, pvParameters )
@@ -26,16 +26,17 @@ portTASK_FUNCTION( vControlTask, pvParameters )
     /* Remove compiler warning */
     ( void ) pvParameters;
 
+    writeString("Control Created\n");
 
     for( ;; )
     {
         socket_num = 0;
-        vTaskDelay( 10 / portTICK_PERIOD_MS );
+        vTaskDelay( 100 / portTICK_PERIOD_MS );
         socket_num = 1;
-        vTaskDelay( 10 / portTICK_PERIOD_MS );
+        vTaskDelay( 100 / portTICK_PERIOD_MS );
         socket_num = 2;
-        vTaskDelay( 10 / portTICK_PERIOD_MS );
+        vTaskDelay( 100 / portTICK_PERIOD_MS );
         socket_num = 3;
-        vTaskDelay( 10 / portTICK_PERIOD_MS );
+        vTaskDelay( 100 / portTICK_PERIOD_MS );
     }
 }
