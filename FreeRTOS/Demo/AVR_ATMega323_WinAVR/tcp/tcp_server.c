@@ -14,10 +14,8 @@
 #include "tcp_server.h"
 #include "socket.h"
 #include "uart_32u4.h"
-#include "../jsmn.h"
 
-#define tcpDELAY_TIME           ( ( const TickType_t ) 100 )
-
+uint8_t socket_num = 0;
 portBASE_TYPE xServerConnEstablished = pdFALSE;
 
 /* TCP server tasks prototype */
@@ -25,7 +23,7 @@ portTASK_FUNCTION_PROTO( vTCPServerTask, pvParameters );
 
 /* Static prototypes for methods in this file. */
 static void vTCPServerInit( void );
-static portBASE_TYPE xServerStatus( eSocketNum sn, TickType_t *xLastWaitTime );
+static portBASE_TYPE xServerStatus( eSocketNum sn );
 
 void vStartTCPServerTask( void )
 {
@@ -40,7 +38,7 @@ static void vTCPServerInit( void )
         vInitSPI();
 
         /* Wiznet chip setup time. */
-        _delay_ms(2000);
+        _delay_ms(500);
         
         struct wiz_NetInfo_t network_config = 
         {
@@ -53,8 +51,8 @@ static void vTCPServerInit( void )
         };
 
         /* Allocate 1KB for tx and rx buffer for socket 0 */
-        uint8_t txsize[8] = { 1, 0, 0, 0, 0, 0, 0, 0 };
-        uint8_t rxsize[8] = { 1, 0, 0, 0, 0, 0, 0, 0 };
+        uint8_t txsize[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
+        uint8_t rxsize[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
         
         /* Initialize network configuration and buffer size. */
         wizchip_setnetinfo( &network_config );
@@ -64,7 +62,7 @@ static void vTCPServerInit( void )
     portEXIT_CRITICAL();
 }
 
-static portBASE_TYPE xServerStatus( eSocketNum sn, TickType_t *xLastWaitTime )
+static portBASE_TYPE xServerStatus( eSocketNum sn )
 {
 int8_t ret;
 
@@ -74,6 +72,7 @@ int8_t ret;
         case SOCK_ESTABLISHED:
             if( getSn_IR( sn ) & Sn_IR_CON )
             {
+                writeString("Socket Established\n");
                 /* Clear CON interrupt bit issued from successful connection */
                 setSn_IR( sn, Sn_IR_CON );
             }
@@ -95,7 +94,7 @@ int8_t ret;
 
          /* Socket n is closed, configure TCP server for socket n on port 8080 */
         case SOCK_CLOSED:
-            if( ( ret = socket( sn, Sn_MR_TCP, 8080, 0x00 ) ) != sn ) return ret;
+            if( ( ret = socket( sn, Sn_MR_TCP, 8080 + sn, 0x00 ) ) != sn ) return ret;
             writeString("Socket closed... opening\n");
             break;
 
@@ -110,44 +109,39 @@ portTASK_FUNCTION( vTCPServerTask, pvParameters )
     /* Remove compiler warning */
     ( void ) pvParameters;
 
+uint8_t buffer[ DATA_BUF_SIZE ];
 int32_t ret;
-uint16_t size = 0;
-uint8_t buf[100];
+int16_t size = 0, sentsize = 0;
 portBASE_TYPE status;
-
-int8_t r;
-jsmn_parser p;
-jsmntok_t t[16];
-
-TickType_t xLastWaitTime;
-
-    jsmn_init(&p);
-    xLastWaitTime = xTaskGetTickCount();
 
     for( ;; )
     {
-        status = xServerStatus( 0, &xLastWaitTime );
+        status = xServerStatus( socket_num );
 
         if( xServerConnEstablished == pdTRUE )
         {
-            /* Check if a recv has occured otherwise block */
-            if( ( getSn_IR(0) & Sn_IR_RECV ) ) 
+            if( ( size = getSn_RX_RSR( socket_num ) ) > 0 )
             {
-                if( (size = getSn_RX_RSR(0)) > 0) // Don't need to check SOCKERR_BUSY because it doesn't not occur.
-                {
-                    if(size > DATA_BUF_SIZE) size = DATA_BUF_SIZE; // clips size if larger that data buffer
-                    ret = recv( 0, buf, size);
-                    writeString(buf);
+                if( size > DATA_BUF_SIZE ) size = DATA_BUF_SIZE;
+                ret = recv( socket_num, buffer, size );
 
-                    r = jsmn_parse(&p, (const char *)buf, sizeof(buf), &t, sizeof(t));
-                    json_extract((char *) buf, t, r); 
+                if(ret <= 0) 
+                {
+                    //error
                 }
-                setSn_IR( 0, Sn_IR_RECV );
-            }
-            else
-            {
-                writeString("No rx... delaying\n");
-                vTaskDelayUntil( &xLastWaitTime, tcpDELAY_TIME );
+                size = (uint16_t) ret;
+                sentsize = 0;
+
+                while(size != sentsize)
+                {
+                    ret = send( socket_num, buffer+sentsize, size-sentsize );
+                    if( ret < 0)
+                    {
+                        close( socket_num );
+                    }
+                    sentsize += ret;
+                }
+                //setSn_IR( socket_num, Sn_IR_RECV );
             }
         }
     }
