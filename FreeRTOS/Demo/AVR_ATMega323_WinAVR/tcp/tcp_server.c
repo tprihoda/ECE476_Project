@@ -15,6 +15,7 @@
 #include "socket.h"
 #include "uart_32u4.h"
 
+uint8_t socket_num = 0;
 portBASE_TYPE xServerConnEstablished = pdFALSE;
 
 /* TCP server tasks prototype */
@@ -104,23 +105,24 @@ int8_t ret;
 
 portTASK_FUNCTION( vTCPServerTask, pvParameters )
 {
-uint8_t *sn = (uint8_t *) pvParameters;
-uint8_t buffer[ DATA_BUF_SIZE ];
+    /* Remove compiler warning */
+    ( void ) pvParameters;
 
+uint8_t buffer[ DATA_BUF_SIZE ];
 int32_t ret;
 int16_t size = 0, sentsize = 0;
 portBASE_TYPE status;
 
     for( ;; )
     {
-        status = xServerStatus( *sn );
+        status = xServerStatus( socket_num );
 
         if( xServerConnEstablished == pdTRUE )
         {
-            if( ( size = getSn_RX_RSR( *sn ) ) > 0 )
+            if( ( size = getSn_RX_RSR( socket_num ) ) > 0 )
             {
                 if( size > DATA_BUF_SIZE ) size = DATA_BUF_SIZE;
-                ret = recv( *sn, buffer, size );
+                ret = recv( socket_num, buffer, size );
 
                 if(ret <= 0) 
                 {
@@ -131,14 +133,14 @@ portBASE_TYPE status;
 
                 while(size != sentsize)
                 {
-                    ret = send( *sn, buffer+sentsize, size-sentsize );
+                    ret = send( socket_num, buffer+sentsize, size-sentsize );
                     if( ret < 0)
                     {
-                        close( *sn );
+                        close( socket_num );
                     }
                     sentsize += ret;
                 }
-                //setSn_IR( *sn, Sn_IR_RECV );
+                //setSn_IR( socket_num, Sn_IR_RECV );
             }
         }
     }
