@@ -29,13 +29,13 @@ portTASK_FUNCTION( vControlTask, pvParameters )
 
     for( ;; )
     {
-        sn = 0;
+        socket_num = 0;
         vTaskDelay( 10 / portTICK_PERIOD_MS );
-        sn = 1;
+        socket_num = 1;
         vTaskDelay( 10 / portTICK_PERIOD_MS );
-        sn = 2;
+        socket_num = 2;
         vTaskDelay( 10 / portTICK_PERIOD_MS );
-        sn = 3;
+        socket_num = 3;
         vTaskDelay( 10 / portTICK_PERIOD_MS );
     }
 }
