@@ -119,8 +119,7 @@ portBASE_TYPE status;
 
     for( ;; )
     {
-        taskENTER_CRITICAL();
-        writeString("In socket");
+        portENTER_CRITICAL();
         if ( socket_tracker != socket_num ){
             total_size_sent = 0;
             socket_tracker = socket_num;
@@ -155,6 +154,6 @@ portBASE_TYPE status;
                 //setSn_IR( socket_num, Sn_IR_RECV );
             }
         }
-        taskEXIT_CRITICAL();
+        portEXIT_CRITICAL();
     }
 }

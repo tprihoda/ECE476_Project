@@ -11,7 +11,7 @@
 #include "../uart_32u4.h"
 
 #define ctrlCONTROL_TASK_PRIORITY       (tskIDLE_PRIORITY + 3)
-#define INTERVAL_TIME                   100 
+#define INTERVAL_TIME                   20 
 #define PREVIOUS_AVG_WEIGHT             0.8
 #define CURRENT_AVG_WEIGHT              0.2 
 #define DEFAULT_TIME                    0.01
