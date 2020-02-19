@@ -16,6 +16,7 @@
 #include "uart_32u4.h"
 
 uint8_t socket_num = 0;
+int sn_bytes_recieved[NUMBER_OF_SOCKETS];
 portBASE_TYPE xServerConnEstablished = pdFALSE;
 
 /* TCP server tasks prototype */

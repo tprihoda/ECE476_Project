@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "main.h"
 
 #ifndef DATA_BUF_SIZE
     #define DATA_BUF_SIZE       ( 128 )
