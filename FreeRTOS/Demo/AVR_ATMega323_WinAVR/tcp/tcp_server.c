@@ -16,7 +16,7 @@
 #include "uart_32u4.h"
 
 uint8_t socket_num = 0;
-int sn_bytes_recieved[NUMBER_OF_SOCKETS];
+uint32_t sn_bytes_recieved[NUMBER_OF_SOCKETS];
 portBASE_TYPE xServerConnEstablished = pdFALSE;
 
 /* TCP server tasks prototype */
@@ -113,16 +113,25 @@ portTASK_FUNCTION( vTCPServerTask, pvParameters )
 uint8_t buffer[ DATA_BUF_SIZE ];
 int32_t ret;
 int16_t size = 0, sentsize = 0;
+uint8_t socket_tracker = 0;
+uint16_t total_size_sent = 0;
 portBASE_TYPE status;
 
     for( ;; )
     {
+        taskENTER_CRITICAL();
+        writeString("In socket");
+        if ( socket_tracker != socket_num ){
+            total_size_sent = 0;
+            socket_tracker = socket_num;
+        }
         status = xServerStatus( socket_num );
 
         if( xServerConnEstablished == pdTRUE )
         {
             if( ( size = getSn_RX_RSR( socket_num ) ) > 0 )
             {
+                sn_bytes_recieved[ socket_num ] = size + total_size_sent;
                 if( size > DATA_BUF_SIZE ) size = DATA_BUF_SIZE;
                 ret = recv( socket_num, buffer, size );
 
@@ -142,8 +151,10 @@ portBASE_TYPE status;
                     }
                     sentsize += ret;
                 }
+                total_size_sent += sentsize;
                 //setSn_IR( socket_num, Sn_IR_RECV );
             }
         }
+        taskEXIT_CRITICAL();
     }
 }

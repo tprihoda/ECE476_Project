@@ -14,13 +14,14 @@
 #define INTERVAL_TIME                   10 
 #define PREVIOUS_AVG_WEIGHT             0.5
 #define CURRENT_AVG_WEIGHT              0.5 
+#define DEFAULT_TIME                    0.01
 
 extern uint8_t socket_num;
-extern int sn_bytes_recieved[NUMBER_OF_SOCKETS];
+extern uint32_t sn_bytes_recieved[NUMBER_OF_SOCKETS];
 
 portTASK_FUNCTION_PROTO( vControlTask, pvParameters );
 
-void updateTiming( int sn_alloced_time[] );
+void updateTiming( float sn_alloced_time[] );
 
 void vStartControlTask( void )
 {
@@ -32,16 +33,34 @@ portTASK_FUNCTION( vControlTask, pvParameters )
     /* Remove compiler warning */
     ( void ) pvParameters;
 
-    uint8_t sn_alloced_time[NUMBER_OF_SOCKETS];
+    float sn_alloced_time[NUMBER_OF_SOCKETS];
 
     writeString("Control Created\n");
 
     for( ;; ){
+        //reset bytes_recieved
+        //for( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+        //    sn_bytes_recieved[i] = 0;
+        //}
         for( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
             socket_num = i;
             vTaskDelay( sn_alloced_time[i] * INTERVAL_TIME / portTICK_PERIOD_MS );
         }
+        char temp[10];
         updateTiming( sn_alloced_time );
+        writeString("Time Alloced: \n");
+        dtostrf(sn_alloced_time[0], 4, 2,temp);
+        writeString(temp);
+        writeString("\n");
+        dtostrf(sn_alloced_time[1], 4, 2,temp);
+        writeString(temp);
+        writeString("\n");
+        dtostrf(sn_alloced_time[2], 4, 2,temp);
+        writeString(temp);
+        writeString("\n");
+        dtostrf(sn_alloced_time[3], 4, 2,temp);
+        writeString(temp);
+        writeString("\n");
     }
 /*
     for( ;; )
@@ -58,11 +77,13 @@ portTASK_FUNCTION( vControlTask, pvParameters )
 */
 }
 
-void updateTiming( int sn_alloced_time[] ){
-    static int average_recieved[NUMBER_OF_SOCKETS] = {0};
-    int total = 0;
+void updateTiming( float sn_alloced_time[] ){
+    static float average_recieved[NUMBER_OF_SOCKETS] = {0};
+    float total = 0;
     for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
-        int current_average = sn_bytes_recieved[i] / INTERVAL_TIME;
+        float current_average = sn_bytes_recieved[i] / INTERVAL_TIME;
+        if ( current_average == 0 )
+            current_average = DEFAULT_TIME;
         //if this is the first pass
         if ( average_recieved[i] == 0 )
             average_recieved[i] = current_average;
