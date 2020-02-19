@@ -15,8 +15,8 @@ port = 8080
 list_sock = []
 num_sock = 4
 #generating poisson distributed data
-data_poisson = poisson.rvs(mu = 3, size = 4000)
-print(data_poisson[0:10])
+#data_poisson = poisson.rvs(mu = 3, size = 4000)
+#print(data_poisson[0:10])
 for i in range(num_sock):
 	s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)#create socket object
 
@@ -28,6 +28,7 @@ for i in range(num_sock):
 	#establish connection with client
 	conn, addr = s.accept()
 	print ('Got connection from',addr)
+
 	conn.send('Thank you for connecting'.encode())
 	#data = data_poisson[0:10]
 	#conn.send(data)
