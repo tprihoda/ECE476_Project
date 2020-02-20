@@ -23,18 +23,18 @@ def client(port,lamda):
         data = "Hello"
         tosend = data.encode()
         client.sendall(tosend)
-        data = client.recv(1024)
-        s = data.decode()
-        print(s)
+        #data = client.recv(1024)
+        #s = data.decode()
+        #print(s)
 #		check = (s=='Thank you for connecting')
 #		print(check)
 
 
 
-threading1 = threading.Thread(target = client,args= (8080,1))
-threading2 = threading.Thread(target = client,args= (8081,2))
-threading3 = threading.Thread(target = client,args= (8082,3))
-threading4 = threading.Thread(target = client,args= (8083,4))
+threading1 = threading.Thread(target = client,args= (8080,4))
+threading2 = threading.Thread(target = client,args= (8081,3))
+threading3 = threading.Thread(target = client,args= (8082,2))
+threading4 = threading.Thread(target = client,args= (8083,1))
 threading1.start()
 threading2.start()
 threading3.start()
