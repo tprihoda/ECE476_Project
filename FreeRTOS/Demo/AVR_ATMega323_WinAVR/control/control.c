@@ -14,7 +14,7 @@
 #define INTERVAL_TIME                   400 
 #define PREVIOUS_AVG_WEIGHT             0.8
 #define CURRENT_AVG_WEIGHT              0.2 
-#define DEFAULT_TIME                    0.01
+#define DEFAULT_TIME                    10 
 
 extern uint8_t socket_num;
 extern uint32_t sn_bytes_recieved[NUMBER_OF_SOCKETS];
