@@ -52,8 +52,8 @@ static void vTCPServerInit( void )
         };
 
         /* Allocate 1KB for tx and rx buffer for socket 0 */
-        uint8_t txsize[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
-        uint8_t rxsize[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
+        uint8_t txsize[8] = { 2, 2, 2, 2, 0, 0, 0, 0 };
+        uint8_t rxsize[8] = { 2, 2, 2, 2, 0, 0, 0, 0 };
         
         /* Initialize network configuration and buffer size. */
         wizchip_setnetinfo( &network_config );

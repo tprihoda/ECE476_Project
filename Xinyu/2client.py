@@ -24,6 +24,7 @@ def client(port,lamda):
         t = random.expovariate(lamda)
         time.sleep(t)
 #receive data from the server
+
         data = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
         counter += len(data)
         tosend = data.encode()
@@ -41,10 +42,10 @@ def client(port,lamda):
 
 
 
-threading1 = threading.Thread(target = client,args= (8080,40))
-threading2 = threading.Thread(target = client,args= (8081,30))
-threading3 = threading.Thread(target = client,args= (8082,20))
-threading4 = threading.Thread(target = client,args= (8083,10))
+threading1 = threading.Thread(target = client,args= (8080,10))
+threading2 = threading.Thread(target = client,args= (8081,20))
+threading3 = threading.Thread(target = client,args= (8082,30))
+threading4 = threading.Thread(target = client,args= (8083,40))
 threading1.start()
 threading2.start()
 threading3.start()
