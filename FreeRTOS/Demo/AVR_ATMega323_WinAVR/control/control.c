@@ -11,7 +11,7 @@
 #include "../uart_32u4.h"
 
 #define ctrlCONTROL_TASK_PRIORITY       (tskIDLE_PRIORITY + 3)
-#define INTERVAL_TIME                   20 
+#define INTERVAL_TIME                   400 
 #define PREVIOUS_AVG_WEIGHT             0.8
 #define CURRENT_AVG_WEIGHT              0.2 
 #define DEFAULT_TIME                    0.01
@@ -44,7 +44,7 @@ portTASK_FUNCTION( vControlTask, pvParameters )
         //}
         for( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
             socket_num = i;
-            vTaskDelay( sn_alloced_time[i] * INTERVAL_TIME / portTICK_PERIOD_MS );
+            vTaskDelay( ( sn_alloced_time[i] * INTERVAL_TIME ) / portTICK_PERIOD_MS );
         }
         char temp[10];
         updateTiming( sn_alloced_time );
