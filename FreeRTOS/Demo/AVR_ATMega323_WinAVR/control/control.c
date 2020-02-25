@@ -11,10 +11,17 @@
 #include "../uart_32u4.h"
 
 #define ctrlCONTROL_TASK_PRIORITY       (tskIDLE_PRIORITY + 3)
+#define INTERVAL_TIME                   250 
+#define PREVIOUS_AVG_WEIGHT             0.6f
+#define CURRENT_AVG_WEIGHT              0.4f
+#define DEFAULT_TIME                    1
 
 extern uint8_t socket_num;
+extern uint32_t sn_bytes_recieved[NUMBER_OF_SOCKETS];
 
 portTASK_FUNCTION_PROTO( vControlTask, pvParameters );
+
+void updateTiming( float sn_alloced_time[] );
 
 void vStartControlTask( void )
 {
@@ -26,17 +33,89 @@ portTASK_FUNCTION( vControlTask, pvParameters )
     /* Remove compiler warning */
     ( void ) pvParameters;
 
-    writeString("Control Created\n");
+    float sn_alloced_time[NUMBER_OF_SOCKETS];
 
+    writeString("Control Created\n");
+    uint8_t counter = 0;
+
+    for( ;; ){
+        //reset bytes_recieved
+        for( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+            sn_bytes_recieved[i] = 0;
+        }
+        for( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+            socket_num = i;
+            vTaskDelay( ( sn_alloced_time[i] * INTERVAL_TIME ) / portTICK_PERIOD_MS );
+        }
+        if ( counter >= 1000/INTERVAL_TIME ){
+            counter = 0;
+            char temp[10];
+            updateTiming( sn_alloced_time );
+            writeString("Time Alloced: \n");
+            for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+                dtostrf(sn_alloced_time[i], 4, 2,temp);
+                writeString(temp);
+                writeString("\n");
+            }
+            writeString("Bytes Recieved: \n");
+            for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+                itoa(sn_bytes_recieved[i], temp, 10);
+                writeString(temp);
+                writeString("\n");
+            }
+
+        }
+        else
+            counter++;
+    }
+/*
     for( ;; )
     {
         socket_num = 0;
-        vTaskDelay( 100 / portTICK_PERIOD_MS );
+        vTaskDelay( sn_alloced_time[0] * INTERVAL_TIME / portTICK_PERIOD_MS );
         socket_num = 1;
-        vTaskDelay( 100 / portTICK_PERIOD_MS );
+        vTaskDelay( sn_alloced_time[1] * INTERVAL_TIME / portTICK_PERIOD_MS );
         socket_num = 2;
-        vTaskDelay( 100 / portTICK_PERIOD_MS );
+        vTaskDelay( sn_alloced_time[2] * INTERVAL_TIME / portTICK_PERIOD_MS );
         socket_num = 3;
-        vTaskDelay( 100 / portTICK_PERIOD_MS );
+        vTaskDelay( sn_alloced_time[3] * INTERVAL_TIME / portTICK_PERIOD_MS );
+    }
+*/
+}
+void updateTiming( float sn_alloced_time[] ){
+    static float average_recieved[NUMBER_OF_SOCKETS] = {0};
+    float total = 0;
+    for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+        if ( sn_bytes_recieved[i] == 0 )
+            sn_bytes_recieved[i] = DEFAULT_TIME;
+        //if this is the first pass
+        if ( average_recieved[i] == 0 )
+            average_recieved[i] = sn_bytes_recieved[i];
+        else
+            average_recieved[i] = PREVIOUS_AVG_WEIGHT * average_recieved[i] + CURRENT_AVG_WEIGHT * sn_bytes_recieved[i];
+        total += average_recieved[i];
+    }
+    for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+        sn_alloced_time[i] = average_recieved[i] / total;
     }
 }
+/*
+void updateTiming( float sn_alloced_time[] ){
+    static float average_recieved[NUMBER_OF_SOCKETS] = {0};
+    float total = 0;
+    for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+        float current_average = sn_bytes_recieved[i] / INTERVAL_TIME;
+        if ( current_average == 0 )
+            current_average = DEFAULT_TIME;
+        //if this is the first pass
+        if ( average_recieved[i] == 0 )
+            average_recieved[i] = current_average;
+        else
+            average_recieved[i] = PREVIOUS_AVG_WEIGHT * average_recieved[i] + CURRENT_AVG_WEIGHT * current_average;
+        total += average_recieved[i];
+    }
+    for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
+        sn_alloced_time[i] = average_recieved[i] / total;
+    }
+}
+*/
