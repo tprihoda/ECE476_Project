@@ -16,6 +16,7 @@
 #include "uart_32u4.h"
 
 uint8_t socket_num = 0;
+uint32_t sn_bytes_recieved[NUMBER_OF_SOCKETS];
 portBASE_TYPE xServerConnEstablished = pdFALSE;
 
 /* TCP server tasks prototype */
@@ -51,8 +52,8 @@ static void vTCPServerInit( void )
         };
 
         /* Allocate 1KB for tx and rx buffer for socket 0 */
-        uint8_t txsize[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
-        uint8_t rxsize[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
+        uint8_t txsize[8] = { 2, 2, 2, 2, 0, 0, 0, 0 };
+        uint8_t rxsize[8] = { 2, 2, 2, 2, 0, 0, 0, 0 };
         
         /* Initialize network configuration and buffer size. */
         wizchip_setnetinfo( &network_config );
@@ -72,6 +73,7 @@ int8_t ret;
         case SOCK_ESTABLISHED:
             if( getSn_IR( sn ) & Sn_IR_CON )
             {
+                writeString("Socket Established\n");
                 /* Clear CON interrupt bit issued from successful connection */
                 setSn_IR( sn, Sn_IR_CON );
             }
@@ -111,16 +113,24 @@ portTASK_FUNCTION( vTCPServerTask, pvParameters )
 uint8_t buffer[ DATA_BUF_SIZE ];
 int32_t ret;
 int16_t size = 0, sentsize = 0;
+uint8_t socket_tracker = 0;
+uint16_t total_size_sent = 0;
 portBASE_TYPE status;
 
     for( ;; )
     {
+        portENTER_CRITICAL();
+        if ( socket_tracker != socket_num ){
+            total_size_sent = 0;
+            socket_tracker = socket_num;
+        }
         status = xServerStatus( socket_num );
 
         if( xServerConnEstablished == pdTRUE )
         {
             if( ( size = getSn_RX_RSR( socket_num ) ) > 0 )
             {
+                sn_bytes_recieved[ socket_num ] = size + total_size_sent;
                 if( size > DATA_BUF_SIZE ) size = DATA_BUF_SIZE;
                 ret = recv( socket_num, buffer, size );
 
@@ -140,8 +150,10 @@ portBASE_TYPE status;
                     }
                     sentsize += ret;
                 }
+                total_size_sent += sentsize;
                 //setSn_IR( socket_num, Sn_IR_RECV );
             }
         }
+        portEXIT_CRITICAL();
     }
 }
