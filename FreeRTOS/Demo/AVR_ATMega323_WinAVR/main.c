@@ -56,8 +56,8 @@
 #include "control/control.h"
 
 /* UART functionality */
-//#include "uart_32u4.h"
-//
+#include "uart_32u4.h"
+
 #define USART_BAUDRATE 9600
 #define BAUD_PRESCALE ((( F_CPU / ( USART_BAUDRATE * 16UL))) - 1)
 
@@ -120,10 +120,3 @@ static void vBlinkyFunction( void *pvParameters )
         vTaskDelay( xDelay );
     }
 }
-
-void vApplicationIdleHook( void )
-{
-    //PORTD ^= (1<<PD4);
-    //_delay_ms(200);
-}
-

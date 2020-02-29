@@ -26,7 +26,6 @@ portTASK_FUNCTION( vControlTask, pvParameters )
     /* Remove compiler warning */
     ( void ) pvParameters;
 
-
     for( ;; )
     {
         socket_num = 0;

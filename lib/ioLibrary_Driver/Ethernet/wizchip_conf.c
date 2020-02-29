@@ -51,6 +51,7 @@
 //A20140501 : for use the type - ptrdiff_t
 #include <stddef.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 #include "wizchip_conf.h"
 
@@ -64,7 +65,10 @@
  * null function is called.
  */
 //void 	  wizchip_cris_enter(void)           {};
-void 	  wizchip_cris_enter(void)           {}
+void 	  wizchip_cris_enter(void)           
+{
+    cli();
+}
 
 /**
  * @brief Default function to disable interrupt.
@@ -72,7 +76,10 @@ void 	  wizchip_cris_enter(void)           {}
  * null function is called.
  */
 //void 	  wizchip_cris_exit(void)          {};
-void 	  wizchip_cris_exit(void)          {}
+void 	  wizchip_cris_exit(void)          
+{
+    sei();
+}
 
 /**
  * @brief Default function to select chip.
