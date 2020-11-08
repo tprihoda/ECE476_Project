@@ -45,12 +45,12 @@ portTASK_FUNCTION( vControlTask, pvParameters )
         }
         for( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
             socket_num = i;
-            vTaskDelay( ( sn_alloced_time[i] * INTERVAL_TIME ) / portTICK_PERIOD_MS );
+            vTaskDelay( ( 0.25 * INTERVAL_TIME ) / portTICK_PERIOD_MS );
         }
         if ( counter >= 1000/INTERVAL_TIME ){
             counter = 0;
             char temp[10];
-            updateTiming( sn_alloced_time );
+            //updateTiming( sn_alloced_time );
             writeString("Time Alloced: \n");
             for ( uint8_t i = 0; i < NUMBER_OF_SOCKETS; i ++ ){
                 dtostrf(sn_alloced_time[i], 4, 2,temp);

@@ -9,7 +9,7 @@ def client(port,lamda):
     client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 #hostname = socket.gethostname()
 #host =socket.gethostbyname(hostname)
-    host = "192.168.0.110"
+    host = "192.168.1.110"
 #define a port on which to connect
 
 #		port = 8080+i

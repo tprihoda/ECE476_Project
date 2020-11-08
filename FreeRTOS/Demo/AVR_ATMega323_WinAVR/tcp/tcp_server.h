@@ -15,7 +15,7 @@ extern "C" {
 #define tcpTCP_SERVER_TASK_PRIORITY         ( tskIDLE_PRIORITY + 2)
 
 #define tcpMAC              0x44, 0xFF, 0xFF, 0x00, 0x00, 0x00
-#define tcpIP               192, 168, 0, 110 
+#define tcpIP               10, 0, 0, 10 
 #define tcpSUBNET           255, 255, 255, 0 
 #define tcpGATEWAY          192, 168, 1, 1 
 #define tcpDNS              8, 8, 8, 8
